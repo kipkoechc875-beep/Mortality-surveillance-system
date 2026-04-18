@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mortality Surveillance System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    form {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #f32905;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ea1a0f;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #e41e10;
+      color: white;
+    }
+
+    .login-box {
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #e51111;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Mortality Surveillance System</h1>
+
+  <!-- LOGIN SECTION (for future admin authentication) -->
+  <div class="login-box">
+    <h3>Admin Login</h3>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginMsg"></p>
+  </div>
+
+  <!-- DEATH FORM -->
+  <form id="deathForm">
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="number" id="age" placeholder="Age" required>
+
+    <select id="sex" required>
+      <option value="">Select Sex</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+
+    <input type="text" id="cause" placeholder="Cause of Death" required>
+    <input type="date" id="date" required>
+
+    <button type="submit">Save Record</button>
+  </form>
+
+  <!-- RECORD TABLE -->
+  <h3>Saved Death Records</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Sex</th>
+        <th>Cause</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="recordsTable"></tbody>
+  </table>
+
+</div>
+
+<script>
+  const API_URL = "http://localhost:3000/api/deaths";
+
+  // Submit form
+  document.getElementById("deathForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const data = {
+      name: document.getElementById("name").value,
+      age: document.getElementById("age").value,
+      sex: document.getElementById("sex").value,
+      cause: document.getElementById("cause").value,
+      date: document.getElementById("date").value
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert("Record saved successfully");
+        document.getElementById("deathForm").reset();
+        loadRecords();
+      } else {
+        alert("Failed to save record");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
+    }
+  });
+
+  // Load records
+  async function loadRecords() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+
+      const table = document.getElementById("recordsTable");
+      table.innerHTML = "";
+
+      data.forEach(record => {
+        table.innerHTML += `
+          <tr>
+            <td>${record.name}</td>
+            <td>${record.age}</td>
+            <td>${record.sex}</td>
+            <td>${record.cause}</td>
+            <td>${record.date}</td>
+          </tr>
+        `;
+      });
+
+    } catch (error) {
+      console.error("Error loading records:", error);
+    }
+  }
+
+  // Simple placeholder login (you will connect JWT later)
+  function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+
+    if (user === "admin" && pass === "admin123") {
+      document.getElementById("loginMsg").innerText = "Login successful (demo only)";
+    } else {
+      document.getElementById("loginMsg").innerText = "Invalid credentials";
+    }
+  }
+
+  // Load data on page start
+  loadRecords();
+</script>
+
+</body>
+</html>
