@@ -54,7 +54,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard Overview</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {user?.role === "admin" ? "Dashboard Overview" : "Your Dashboard Overview"}
+        </h2>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline" data-testid="button-view-all">
             <Link href="/records">

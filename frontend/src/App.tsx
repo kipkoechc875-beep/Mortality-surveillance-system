@@ -13,6 +13,7 @@ import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
 import AddRecord from "@/pages/AddRecord";
+import EditRecord from "@/pages/EditRecord";
 import Records from "@/pages/Records";
 import RecordDetail from "@/pages/RecordDetail";
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
       <Route path="/admin">{() => <ProtectedRoute component={Admin} roles={["admin"]} />}</Route>
       <Route path="/records/new">{() => <ProtectedRoute component={AddRecord} />}</Route>
+      <Route path="/records/:id/edit">{() => <ProtectedRoute component={EditRecord} roles={["admin"]} />}</Route>
       <Route path="/records/:id">{() => <ProtectedRoute component={RecordDetail} />}</Route>
       <Route path="/records">{() => <ProtectedRoute component={Records} />}</Route>
       <Route component={NotFound} />

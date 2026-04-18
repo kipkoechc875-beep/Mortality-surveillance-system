@@ -1,7 +1,8 @@
-import { subDays, subMonths } from "date-fns";
+import { subDays } from "date-fns";
 
 export type RecordModel = {
   id: string;
+  owner: string;
   name: string;
   age: number;
   sex: "Male" | "Female" | "Other";
@@ -30,6 +31,8 @@ const LOCATIONS = [
   "Westwood Care Home",
 ];
 
+const SAMPLE_OWNERS = ["admin", "user1", "health_officer"];
+
 const generateMockData = (): RecordModel[] => {
   const records: RecordModel[] = [];
   const today = new Date();
@@ -40,9 +43,11 @@ const generateMockData = (): RecordModel[] => {
     const cause = CAUSES[Math.floor(Math.random() * CAUSES.length)];
     const location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
     const date_of_death = subDays(today, Math.floor(Math.random() * 365)).toISOString();
-    
+    const owner = SAMPLE_OWNERS[i % SAMPLE_OWNERS.length];
+
     records.push({
       id: `REC-${1000 + i}`,
+      owner,
       name: `Patient ${i}`,
       age,
       sex,
@@ -52,8 +57,7 @@ const generateMockData = (): RecordModel[] => {
       created_at: new Date().toISOString(),
     });
   }
-  
-  // Sort by date_of_death descending
+
   return records.sort((a, b) => new Date(b.date_of_death).getTime() - new Date(a.date_of_death).getTime());
 };
 

@@ -39,11 +39,11 @@ exports.login = (req, res) => {
       return res.status(401).json({ message: "Invalid password" });
 
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, username: user.username, role: user.role },
       SECRET,
       { expiresIn: "1h" }
     );
 
-    res.json({ token, role: user.role });
+    res.json({ token, role: user.role, id: user.id });
   });
 };

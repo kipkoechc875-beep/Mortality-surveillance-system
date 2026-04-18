@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 interface User {
+  id: number;
   username: string;
   role: "user" | "admin";
 }
@@ -49,7 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, message: data.message || "Login failed" };
       }
 
-      const loggedUser = { username, role: data.role as "user" | "admin" };
+      const loggedUser = {
+        id: data.id ?? 0,
+        username,
+        role: data.role as "user" | "admin",
+      };
       setUser(loggedUser);
       setToken(data.token);
       localStorage.setItem("token", data.token);

@@ -6,23 +6,23 @@ export default function Admin() {
   return (
     <div className="space-y-6 rounded-3xl border border-border bg-card p-8 shadow-sm">
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold">User Management</h1>
+        <h1 className="text-3xl font-bold">Admin Panel</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Welcome back, {user?.username}. Manage users and their access levels from this panel.
+          Welcome back, {user?.username}. Use the admin tools below to manage users and system access.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-3xl border border-border bg-background p-6">
-          <h2 className="text-xl font-semibold">User Accounts</h2>
+          <h2 className="text-xl font-semibold">User Management</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            View and manage all user accounts, including roles and permissions.
+            Create and manage user accounts, assign roles, and control who can submit mortality records.
           </p>
         </div>
         <div className="rounded-3xl border border-border bg-background p-6">
-          <h2 className="text-xl font-semibold">Access Control</h2>
+          <h2 className="text-xl font-semibold">System Oversight</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Control user roles and ensure proper access to system features.
+            Review active users, monitor record submissions, and keep system access aligned with policy.
           </p>
         </div>
       </div>
