@@ -4,22 +4,6 @@ import { Link } from "wouter";
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f4f4f4" }}>
-      <header
-        style={{ backgroundColor: "#e41e10" }}
-        className="flex items-center justify-between px-8 py-4 shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Mortality Surveillance System" className="h-12 w-auto object-contain" />
-        </div>
-        <Link
-          href="/login"
-          className="rounded border border-white/40 px-4 py-1.5 text-sm font-medium text-white/90 transition-colors hover:border-white hover:text-white"
-          data-testid="link-header-login"
-        >
-          Sign In
-        </Link>
-      </header>
-
       <section className="flex flex-col items-center justify-center px-6 pb-16 pt-20 text-center">
         <div
           className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"

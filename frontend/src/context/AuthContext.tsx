@@ -3,6 +3,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string) => void;
+  register: (username: string) => void;
   logout: () => void;
   user: { username: string } | null;
 }
@@ -16,6 +17,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({ username });
   };
 
+  const register = (username: string) => {
+    setUser({ username });
+  };
+
   const logout = () => {
     setUser(null);
   };
@@ -25,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         isAuthenticated: !!user,
         login,
+        register,
         logout,
         user,
       }}
