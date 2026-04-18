@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { format } from "date-fns";
-import { Download, Eye, Search, Trash2 } from "lucide-react";
+import { Download, Eye, Search, Trash2, Edit } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { useRecords } from "@/context/RecordsContext";
 import { useToast } from "@/hooks/use-toast";
 import { CAUSES, LOCATIONS } from "@/lib/mock-data";
@@ -21,14 +22,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export default function Records() {
-  const { records, deleteRecord } = useRecords();
+  const { records, updateRecord } = useRecords();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [sexFilter, setSexFilter] = useState<string>("all");
   const [causeFilter, setCauseFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
+  const [editingRecord, setEditingRecord] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    age: "",
+    sex: "",
+    cause_of_death: "",
+    location: "",
+    date_of_death: "",
+  });
 
   const filteredRecords = useMemo(() => {
     return records.filter((record) => {
@@ -47,13 +66,43 @@ export default function Records() {
     });
   }, [records, search, sexFilter, causeFilter, locationFilter]);
 
-  const handleDelete = (id: string) => {
-    deleteRecord(id);
+  const handleDelete = async (id: number) => {
+    await deleteRecord(id);
     toast({
       title: "Record deleted",
       description: "The record has been permanently removed.",
       variant: "destructive",
     });
+  };
+
+  const handleEdit = (record: any) => {
+    setEditingRecord(record);
+    setEditForm({
+      name: record.name,
+      age: record.age.toString(),
+      sex: record.sex,
+      cause_of_death: record.cause_of_death,
+      location: record.location,
+      date_of_death: record.date_of_death,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (editingRecord) {
+      await updateRecord(editingRecord.id, {
+        name: editForm.name,
+        age: parseInt(editForm.age),
+        sex: editForm.sex,
+        cause_of_death: editForm.cause_of_death,
+        location: editForm.location,
+        date_of_death: editForm.date_of_death,
+      });
+      setEditingRecord(null);
+      toast({
+        title: "Record updated",
+        description: "The record has been updated successfully.",
+      });
+    }
   };
 
   return (
@@ -157,38 +206,45 @@ export default function Records() {
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
+                      <Button variant="ghost" size="icon" title="Edit" onClick={() => handleEdit(record)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            title="Delete"
-                            data-testid={`button-delete-${record.id}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Record</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete the record for {record.name}? This action cannot be
-                              undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(record.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      {user?.role === "admin" ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              title="Delete"
+                              data-testid={`button-delete-${record.id}`}
                             >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Record</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete the record for {record.name}? This action cannot be
+                                undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(record.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Admin only</span>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -206,6 +262,104 @@ export default function Records() {
       </Card>
 
       <div className="text-right text-sm text-muted-foreground">Showing {filteredRecords.length} records</div>
+
+      <Dialog open={!!editingRecord} onOpenChange={() => setEditingRecord(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Record</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="age" className="text-right">
+                Age
+              </Label>
+              <Input
+                id="age"
+                type="number"
+                value={editForm.age}
+                onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sex" className="text-right">
+                Sex
+              </Label>
+              <Select value={editForm.sex} onValueChange={(value) => setEditForm({ ...editForm, sex: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="cause" className="text-right">
+                Cause
+              </Label>
+              <Select value={editForm.cause_of_death} onValueChange={(value) => setEditForm({ ...editForm, cause_of_death: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CAUSES.map((cause) => (
+                    <SelectItem key={cause} value={cause}>
+                      {cause}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="location" className="text-right">
+                Location
+              </Label>
+              <Select value={editForm.location} onValueChange={(value) => setEditForm({ ...editForm, location: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOCATIONS.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="date" className="text-right">
+                Date of Death
+              </Label>
+              <Input
+                id="date"
+                type="date"
+                value={editForm.date_of_death}
+                onChange={(e) => setEditForm({ ...editForm, date_of_death: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setEditingRecord(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

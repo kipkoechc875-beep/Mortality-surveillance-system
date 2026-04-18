@@ -2,16 +2,20 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
 
-const SECRET = "mysecretkey";
+const SECRET = process.env.JWT_SECRET || "mysecretkey";
 
 // REGISTER
 exports.register = async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password are required" });
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
   userModel.createUser(
-    { username, password: hashedPassword, role },
+    { username, password: hashedPassword, role: "user" },
     (err, result) => {
       if (err) return res.status(500).json(err);
       res.json({ message: "User registered successfully" });

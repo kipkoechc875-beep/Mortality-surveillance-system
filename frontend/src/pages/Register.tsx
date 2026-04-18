@@ -14,7 +14,7 @@ export default function Register() {
   const { register } = useAuth();
   const [, setLocation] = useLocation();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -28,7 +28,12 @@ export default function Register() {
       return;
     }
 
-    register(username);
+    const result = await register(username, password);
+    if (!result.success) {
+      setError(result.message ?? "Registration failed.");
+      return;
+    }
+
     setLocation("/dashboard");
   };
 

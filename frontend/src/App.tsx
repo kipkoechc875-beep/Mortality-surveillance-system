@@ -11,6 +11,7 @@ import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
+import Admin from "@/pages/Admin";
 import AddRecord from "@/pages/AddRecord";
 import Records from "@/pages/Records";
 import RecordDetail from "@/pages/RecordDetail";
@@ -18,13 +19,18 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 
 type ProtectedRouteProps = {
   component: ComponentType;
+  roles?: Array<"user" | "admin">;
 };
 
-function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAuth();
+function ProtectedRoute({ component: Component, roles }: ProtectedRouteProps) {
+  const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
     return <Redirect to="/login" />;
+  }
+
+  if (roles && user && !roles.includes(user.role)) {
+    return <Redirect to="/" />;
   }
 
   return (
@@ -43,6 +49,7 @@ function Router() {
       <Route path="/register">{() => <PublicLayout><Register /></PublicLayout>}</Route>
       <Route path="/login">{() => <PublicLayout><Login /></PublicLayout>}</Route>
       <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
+      <Route path="/admin">{() => <ProtectedRoute component={Admin} roles={["admin"]} />}</Route>
       <Route path="/records/new">{() => <ProtectedRoute component={AddRecord} />}</Route>
       <Route path="/records/:id">{() => <ProtectedRoute component={RecordDetail} />}</Route>
       <Route path="/records">{() => <ProtectedRoute component={Records} />}</Route>

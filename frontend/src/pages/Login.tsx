@@ -13,7 +13,7 @@ export default function Login() {
   const { login } = useAuth();
   const [, setLocation] = useLocation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -22,7 +22,12 @@ export default function Login() {
       return;
     }
 
-    login(username);
+    const result = await login(username, password);
+    if (!result.success) {
+      setError(result.message ?? "Invalid credentials.");
+      return;
+    }
+
     setLocation("/dashboard");
   };
 

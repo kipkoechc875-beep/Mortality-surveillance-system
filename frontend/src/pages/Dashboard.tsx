@@ -1,4 +1,5 @@
 import { useRecords } from "@/context/RecordsContext";
+import { useAuth } from "@/context/AuthContext";
 import { Link } from "wouter";
 import { format, isToday } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Activity, PlusCircle, FileText, Users, MapPin } from "lucide-react";
 
 export default function Dashboard() {
   const { records } = useRecords();
+  const { user } = useAuth();
 
   // KPIs
   const totalRecords = records.length;
@@ -53,7 +55,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold tracking-tight">Dashboard Overview</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline" data-testid="button-view-all">
             <Link href="/records">
               <FileText className="mr-2 h-4 w-4" /> View All
@@ -64,6 +66,13 @@ export default function Dashboard() {
               <PlusCircle className="mr-2 h-4 w-4" /> Add Record
             </Link>
           </Button>
+          {user?.role === "admin" && (
+            <Button asChild variant="secondary" data-testid="button-admin-panel">
+              <Link href="/admin">
+                <Users className="mr-2 h-4 w-4" /> Admin Panel
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 

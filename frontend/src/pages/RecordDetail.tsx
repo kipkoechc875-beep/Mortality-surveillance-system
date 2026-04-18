@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { Activity, ArrowLeft, Calendar, Clock, FileText, MapPin, Trash2, User } from "lucide-react";
 import { Link, useLocation, useRoute } from "wouter";
+import { useAuth } from "@/context/AuthContext";
 import { useRecords } from "@/context/RecordsContext";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -25,6 +26,7 @@ export default function RecordDetail() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  const { user } = useAuth();
   const record = records.find((entry) => entry.id === id);
 
   if (!record) {
@@ -115,32 +117,38 @@ export default function RecordDetail() {
             System entry: {format(new Date(record.created_at), "MMM dd, yyyy HH:mm")}
           </div>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" data-testid="button-delete-record">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Record
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Record</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete the record for {record.name}? This action cannot be undone and will
-                  remove the data from all reports.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  data-testid="button-confirm-delete"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            {user?.role === "admin" ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" data-testid="button-delete-record">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Record
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Record</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete the record for {record.name}? This action cannot be undone and will
+                    remove the data from all reports.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    data-testid="button-confirm-delete"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <div className="rounded-md border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+              Delete access is reserved for admin accounts.
+            </div>
+          )}
         </CardFooter>
       </Card>
     </div>

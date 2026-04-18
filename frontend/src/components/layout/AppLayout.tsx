@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, PlusCircle, FileText, LogOut } from "lucide-react";
+import { LayoutDashboard, PlusCircle, FileText, ShieldCheck, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,6 +44,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  {user?.role === "admin" && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={location === "/admin"}>
+                        <Link href="/admin" data-testid="link-admin">
+                          <ShieldCheck />
+                          <span>Admin Panel</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/records/new"}>
                       <Link href="/records/new" data-testid="link-add-record">

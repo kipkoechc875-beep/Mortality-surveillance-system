@@ -1,28 +1,90 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+
+interface User {
+  username: string;
+  role: "user" | "admin";
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (username: string) => void;
-  register: (username: string) => void;
+  login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  register: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
-  user: { username: string } | null;
+  user: User | null;
+  token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  const login = (username: string) => {
-    setUser({ username });
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (storedToken && storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser) as User;
+        setToken(storedToken);
+        setUser(parsedUser);
+      } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        return { success: false, message: data.message || "Login failed" };
+      }
+
+      const loggedUser = { username, role: data.role as "user" | "admin" };
+      setUser(loggedUser);
+      setToken(data.token);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(loggedUser));
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: "Unable to reach the authentication server." };
+    }
   };
 
-  const register = (username: string) => {
-    setUser({ username });
+  const register = async (username: string, password: string) => {
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        return { success: false, message: data.message || "Registration failed" };
+      }
+
+      return login(username, password);
+    } catch (error) {
+      return { success: false, message: "Unable to reach the authentication server." };
+    }
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   return (
@@ -33,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         user,
+        token,
       }}
     >
       {children}
