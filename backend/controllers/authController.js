@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   userModel.createUser(
-    { username, password: hashedPassword, role: "user" },
+    { username, password: hashedPassword, role: "user", is_active: 1 },
     (err, result) => {
       if (err) return res.status(500).json(err);
       res.json({ message: "User registered successfully" });
@@ -33,6 +33,10 @@ exports.login = (req, res) => {
       return res.status(404).json({ message: "User not found" });
 
     const user = results[0];
+
+    if (user.is_active === 0) {
+      return res.status(403).json({ message: "Account is disabled" });
+    }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid)

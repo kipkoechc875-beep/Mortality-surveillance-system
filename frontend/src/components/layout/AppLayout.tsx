@@ -49,7 +49,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       <SidebarMenuButton asChild isActive={location === "/admin"}>
                         <Link href="/admin" data-testid="link-admin">
                           <ShieldCheck />
-                          <span>Admin Panel</span>
+                          <span>User Management</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
