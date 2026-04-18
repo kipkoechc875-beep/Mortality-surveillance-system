@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import { Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,9 +30,11 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg border-border">
         <CardHeader className="space-y-1 items-center text-center">
-          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Activity className="h-6 w-6 text-primary" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Mortality Surveillance System"
+            className="mb-4 h-16 w-auto object-contain"
+          />
           <CardTitle className="text-2xl font-bold tracking-tight">Mortality Surveillance System</CardTitle>
           <CardDescription className="text-muted-foreground">
             Enter your credentials to access the system

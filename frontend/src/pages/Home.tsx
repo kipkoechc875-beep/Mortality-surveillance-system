@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, BarChart3, ClipboardList, FileText, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, BarChart3, ClipboardList, FileText, ShieldCheck, Users } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
@@ -9,10 +9,7 @@ export default function Home() {
         className="flex items-center justify-between px-8 py-4 shadow-sm"
       >
         <div className="flex items-center gap-3">
-          <div className="rounded bg-white/20 p-1.5">
-            <Activity className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-base font-semibold tracking-wide text-white">Mortality Surveillance System</span>
+          <img src="/logo.png" alt="Mortality Surveillance System" className="h-12 w-auto object-contain" />
         </div>
         <Link
           href="/login"

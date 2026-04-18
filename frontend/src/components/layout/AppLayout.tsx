@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import { Activity, LayoutDashboard, PlusCircle, FileText, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, PlusCircle, FileText, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -29,9 +29,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-[100dvh] w-full bg-background">
         <Sidebar className="border-r border-border">
           <SidebarContent>
-            <div className="p-4 flex items-center gap-2 border-b border-border">
-              <Activity className="h-6 w-6 text-primary" />
-              <span className="font-semibold tracking-tight">Mortality Surveillance</span>
+            <div className="p-4 flex items-center border-b border-border">
+              <img src="/logo.png" alt="Mortality Surveillance System" className="h-12 w-auto object-contain" />
             </div>
             <SidebarGroup>
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -79,7 +78,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 sticky top-0 z-10">
             <SidebarTrigger />
-            <h1 className="font-semibold text-lg">Mortality Surveillance System</h1>
+            <img src="/logo.png" alt="Mortality Surveillance System" className="h-8 w-auto object-contain" />
           </header>
           <main className="flex-1 p-6 overflow-auto">
             <div className="max-w-6xl mx-auto">
