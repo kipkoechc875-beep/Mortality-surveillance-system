@@ -9,8 +9,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Activity, PlusCircle, FileText, Users, MapPin } from "lucide-react";
 
 export default function Dashboard() {
-  const { records } = useRecords();
+  const { records, loading, error } = useRecords();
   const { user } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Error loading dashboard data: {error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   // KPIs
   const totalRecords = records.length;
@@ -49,7 +71,42 @@ export default function Dashboard() {
     .map(([month, count]) => ({ month, count }))
     .reverse(); // simple reverse for chronological order
 
-  const COLORS = ['#e41e10', '#f32905', '#ea1a0f', '#ff6b6b', '#ff8787'];
+  // Color palette for causes of death - distinct and accessible colors
+  const CAUSE_COLORS = {
+    'Cardiovascular Disease': '#e41e10', // Red
+    'Pneumonia': '#f39c12', // Orange
+    'Road Traffic Accident': '#8e44ad', // Purple
+    'Cancer': '#c0392b', // Dark Red
+    'Sepsis': '#e74c3c', // Orange Red
+    'Diabetes Complications': '#3498db', // Blue
+    'Stroke': '#9b59b6', // Violet
+    'Tuberculosis': '#16a085', // Teal
+    'Malaria': '#d35400', // Burnt Orange
+    'Measles': '#2ecc71', // Green
+    'Typhoid': '#34495e', // Dark Blue-Gray
+    'Dengue': '#f1c40f', // Yellow
+    'Meningitis': '#e67e22', // Orange
+    'Hepatitis': '#1abc9c', // Turquoise
+    'HIV/AIDS': '#2c3e50', // Dark Gray
+  } as Record<string, string>;
+
+  // Function to get color for a cause of death
+  const getCauseColor = (cause: string): string => {
+    if (CAUSE_COLORS[cause]) {
+      return CAUSE_COLORS[cause];
+    }
+    // Fallback: generate a consistent color based on cause name hash
+    const hash = cause.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = Object.values(CAUSE_COLORS);
+    return colors[hash % colors.length];
+  };
+
+  const LOCATION_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#6b5b95', '#ff6f61', '#2a9d8f', '#f4a261', '#264653'];
+
+  const getLocationColor = (location: string): string => {
+    const hash = location.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return LOCATION_COLORS[hash % LOCATION_COLORS.length];
+  };
 
   return (
     <div className="space-y-6">
@@ -141,30 +198,43 @@ export default function Dashboard() {
         
         <Card className="col-span-1">
           <CardHeader>
-            <CardTitle>Deaths by Location</CardTitle>
+            <CardTitle>Deaths by Hospital Location</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={locationsData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {locationsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <RechartsTooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={locationsData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {locationsData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={getLocationColor(entry.name)} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {locationsData.map((entry) => (
+                <div key={entry.name} className="flex items-center gap-2 text-sm">
+                  <span
+                    className="inline-block h-3 w-3 rounded-full"
+                    style={{ backgroundColor: getLocationColor(entry.name) }}
+                  />
+                  <span>{entry.name}</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-        
+
         <Card className="col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>Top Causes of Death</CardTitle>
@@ -176,7 +246,11 @@ export default function Dashboard() {
                 <XAxis type="number" />
                 <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
                 <RechartsTooltip />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                  {causesData.map((entry, index) => (
+                    <Cell key={`cell-${entry.name}`} fill={getCauseColor(entry.name)} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -194,7 +268,7 @@ export default function Dashboard() {
                 <TableHead>ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Cause of Death</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>Hospital Location</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>

@@ -16,6 +16,7 @@ import AddRecord from "@/pages/AddRecord";
 import EditRecord from "@/pages/EditRecord";
 import Records from "@/pages/Records";
 import RecordDetail from "@/pages/RecordDetail";
+import Locations from "@/pages/Locations";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 
 type ProtectedRouteProps = {
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/login">{() => <PublicLayout><Login /></PublicLayout>}</Route>
       <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
       <Route path="/admin">{() => <ProtectedRoute component={Admin} roles={["admin"]} />}</Route>
+      <Route path="/locations">{() => <ProtectedRoute component={Locations} roles={["admin"]} />}</Route>
       <Route path="/records/new">{() => <ProtectedRoute component={AddRecord} />}</Route>
       <Route path="/records/:id/edit">{() => <ProtectedRoute component={EditRecord} roles={["admin"]} />}</Route>
       <Route path="/records/:id">{() => <ProtectedRoute component={RecordDetail} />}</Route>

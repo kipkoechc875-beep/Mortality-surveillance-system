@@ -1,8 +1,10 @@
 import { subDays } from "date-fns";
 
 export type RecordModel = {
-  id: string;
-  owner: string;
+  id: string | number;
+  owner?: string;
+  user_id?: number;
+  is_read?: 0 | 1;
   name: string;
   age: number;
   sex: "Male" | "Female" | "Other";

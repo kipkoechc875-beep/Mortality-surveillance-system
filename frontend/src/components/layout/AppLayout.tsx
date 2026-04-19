@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, PlusCircle, FileText, ShieldCheck, LogOut } from "lucide-react";
+import { useRecords } from "@/context/RecordsContext";
+import { LayoutDashboard, PlusCircle, FileText, ShieldCheck, LogOut, MapPin } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,9 +15,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
+  const { unreadCount } = useRecords();
   const [location, setLocation] = useLocation();
 
   const handleLogout = () => {
@@ -54,6 +57,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
+                  {user?.role === "admin" && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={location === "/locations"}>
+                        <Link href="/locations" data-testid="link-locations">
+                          <MapPin />
+                          <span>Hospital Locations</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/records/new"}>
                       <Link href="/records/new" data-testid="link-add-record">
@@ -64,9 +77,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/records"}>
-                      <Link href="/records" data-testid="link-records">
+                      <Link href="/records" data-testid="link-records" className="flex items-center gap-2">
                         <FileText />
                         <span>Records / Reports</span>
+                        {user?.role === "admin" && unreadCount > 0 ? (
+                          <Badge className="ml-2">{unreadCount}</Badge>
+                        ) : null}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { format } from "date-fns";
 import { z } from "zod";
@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useRecords } from "@/context/RecordsContext";
-import { CAUSES, LOCATIONS } from "@/lib/mock-data";
+import { CAUSES } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -18,6 +18,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
+
+type HospitalLocation = {
+  id: number;
+  name: string;
+};
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -37,6 +42,8 @@ export default function EditRecord() {
   const { records, updateRecord } = useRecords();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [locations, setLocations] = useState<HospitalLocation[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(true);
 
   const record = useMemo(() => records.find((entry) => entry.id === id), [records, id]);
 
@@ -52,26 +59,61 @@ export default function EditRecord() {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
+  // Fetch hospital locations on component mount
+  useEffect(() => {
+    async function fetchLocations() {
+      try {
+        setLoadingLocations(true);
+        const response = await fetch("/api/locations", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setLocations(data);
+        } else {
+          console.error("Failed to fetch locations");
+        }
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      } finally {
+        setLoadingLocations(false);
+      }
+    }
+
+    fetchLocations();
+  }, []);
+
+  const onSubmit = async (data: FormValues) => {
     if (!record) {
       return;
     }
 
-    updateRecord(record.id, {
-      name: data.name,
-      age: data.age,
-      sex: data.sex,
-      cause_of_death: data.cause_of_death,
-      location: data.location,
-      date_of_death: data.date_of_death.toISOString(),
-    });
+    try {
+      await updateRecord(parseInt(record.id), {
+        name: data.name,
+        age: data.age,
+        sex: data.sex,
+        cause_of_death: data.cause_of_death,
+        location: data.location,
+        date_of_death: data.date_of_death.toISOString().split('T')[0], // Format as YYYY-MM-DD for database
+      });
 
-    toast({
-      title: "Record updated",
-      description: "The mortality record has been successfully updated.",
-    });
+      toast({
+        title: "Record updated",
+        description: "The mortality record has been successfully updated.",
+      });
 
-    setLocation("/records");
+      setLocation("/records");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as Error).message || "Failed to update record. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!user || user.role !== "admin") {
@@ -196,16 +238,16 @@ export default function EditRecord() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Location</FormLabel>
+                      <FormLabel>Hospital Location</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-location">
-                            <SelectValue placeholder="Select location" />
+                            <SelectValue placeholder="Select hospital location" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {LOCATIONS.map((loc) => (
-                            <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                          {locations.map((loc) => (
+                            <SelectItem key={loc.id} value={loc.name}>{loc.name}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

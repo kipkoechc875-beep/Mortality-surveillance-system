@@ -44,14 +44,22 @@ export default function RecordDetail() {
     );
   }
 
-  const handleDelete = () => {
-    deleteRecord(record.id);
-    toast({
-      title: "Record deleted",
-      description: "The record has been permanently removed.",
-      variant: "destructive",
-    });
-    setLocation("/records");
+  const handleDelete = async () => {
+    try {
+      await deleteRecord(parseInt(record.id));
+      toast({
+        title: "Record deleted",
+        description: "The record has been permanently removed.",
+        variant: "destructive",
+      });
+      setLocation("/records");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as Error).message || "Failed to delete record. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -98,7 +106,7 @@ export default function RecordDetail() {
 
             <div className="space-y-1">
               <div className="flex items-center text-sm text-muted-foreground">
-                <MapPin className="mr-2 h-4 w-4" /> Location
+                <MapPin className="mr-2 h-4 w-4" /> Hospital Location
               </div>
               <div className="text-lg font-medium">{record.location}</div>
             </div>

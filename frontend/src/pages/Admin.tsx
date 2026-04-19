@@ -3,6 +3,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 type AdminUser = {
   id: number;
@@ -11,57 +14,166 @@ type AdminUser = {
   is_active: 0 | 1;
 };
 
+type HospitalLocation = {
+  id: number;
+  name: string;
+};
+
 export default function Admin() {
   const { user, token } = useAuth();
+  const { toast } = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [locations, setLocations] = useState<HospitalLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newLocationName, setNewLocationName] = useState("");
+  const [addingLocation, setAddingLocation] = useState(false);
 
   useEffect(() => {
     if (!token) return;
 
-    async function fetchUsers() {
+    async function fetchUsersAndLocations() {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await fetch("/api/users", {
+        // Fetch users
+        const usersResponse = await fetch("/api/users", {
           headers: {
             Authorization: token!,
             "Content-Type": "application/json",
           },
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errorMsg = errorData.message || `HTTP ${response.status}`;
+        if (!usersResponse.ok) {
+          const errorData = await usersResponse.json().catch(() => ({}));
+          const errorMsg = errorData.message || `HTTP ${usersResponse.status}`;
           throw new Error(errorMsg);
         }
 
-        const data = await response.json();
-        setUsers(data);
+        const usersData = await usersResponse.json();
+        setUsers(usersData);
+
+        // Fetch locations
+        const locationsResponse = await fetch("/api/locations", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (locationsResponse.ok) {
+          const locationsData = await locationsResponse.json();
+          setLocations(locationsData);
+        }
       } catch (err) {
-        console.error("Failed to load users:", err);
-        setError((err as Error).message || "Unable to fetch users.");
+        console.error("Failed to load data:", err);
+        setError((err as Error).message || "Unable to fetch data.");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchUsers();
+    fetchUsersAndLocations();
   }, [token]);
 
-  const refreshUsers = async () => {
+  const refreshData = async () => {
     if (!token) return;
 
-    const response = await fetch("/api/users", {
+    const usersResponse = await fetch("/api/users", {
       headers: {
         Authorization: token!,
         "Content-Type": "application/json",
       },
     });
-    if (response.ok) {
-      setUsers(await response.json());
+    if (usersResponse.ok) {
+      setUsers(await usersResponse.json());
+    }
+
+    const locationsResponse = await fetch("/api/locations", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (locationsResponse.ok) {
+      setLocations(await locationsResponse.json());
+    }
+  };
+
+  const addLocation = async () => {
+    if (!newLocationName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a hospital location name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingLocation(true);
+    try {
+      const response = await fetch("/api/locations", {
+        method: "POST",
+        headers: {
+          Authorization: token!,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newLocationName.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      toast({
+        title: "Success",
+        description: "Hospital location added successfully",
+      });
+
+      setNewLocationName("");
+      await refreshData();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: (err as Error).message || "Failed to add hospital location",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingLocation(false);
+    }
+  };
+
+  const deleteLocation = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this hospital location?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/locations/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: token!,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      toast({
+        title: "Success",
+        description: "Hospital location deleted successfully",
+      });
+
+      await refreshData();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: (err as Error).message || "Failed to delete hospital location",
+        variant: "destructive",
+      });
     }
   };
 
@@ -74,7 +186,7 @@ export default function Admin() {
       },
       body: JSON.stringify({ is_active: isActive ? 0 : 1 }),
     });
-    refreshUsers();
+    refreshData();
   };
 
   const deleteUser = async (id: number) => {
@@ -89,19 +201,19 @@ export default function Admin() {
         "Content-Type": "application/json",
       },
     });
-    refreshUsers();
+    refreshData();
   };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Admin User Management</CardTitle>
+          <CardTitle>Admin Management Panel</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm text-muted-foreground">
-              Welcome back, {user?.username}. Here you can view all users, their roles, and enable, disable or delete accounts.
+              Welcome back, {user?.username}. Here you can manage users, hospital locations, and system settings.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -112,11 +224,62 @@ export default function Admin() {
               </p>
             </div>
             <div className="rounded-3xl border border-border bg-background p-6">
-              <h2 className="text-xl font-semibold">Account Controls</h2>
+              <h2 className="text-xl font-semibold">Hospital Locations</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Enable or disable user accounts and remove inactive or unauthorized users.
+                Add, view, and manage hospital locations for death records.
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Hospital Locations</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter hospital location name"
+              value={newLocationName}
+              onChange={(e) => setNewLocationName(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && addLocation()}
+              disabled={addingLocation}
+            />
+            <Button onClick={addLocation} disabled={addingLocation}>
+              {addingLocation ? "Adding..." : "Add Location"}
+            </Button>
+          </div>
+
+          <div className="mt-4">
+            {locations.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hospital locations added yet.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Location Name</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {locations.map((location) => (
+                    <TableRow key={location.id}>
+                      <TableCell>{location.name}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteLocation(location.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -164,6 +327,7 @@ export default function Admin() {
                           size="sm"
                           variant="outline"
                           onClick={() => toggleUserActive(userEntry.id, userEntry.is_active)}
+                          disabled={userEntry.id === user?.id}
                         >
                           {userEntry.is_active ? "Disable" : "Enable"}
                         </Button>

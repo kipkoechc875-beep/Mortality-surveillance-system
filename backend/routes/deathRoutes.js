@@ -7,6 +7,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Routes
 router.post("/", authMiddleware.verifyToken, deathController.addDeath);
 router.get("/", authMiddleware.verifyToken, deathController.getDeaths);
-router.delete("/:id", authMiddleware.verifyToken, authMiddleware.isAdmin, deathController.deleteDeath);
+router.get("/unread-count", authMiddleware.verifyToken, authMiddleware.isAdmin, deathController.getUnreadCount);
+router.patch("/mark-read", authMiddleware.verifyToken, authMiddleware.isAdmin, deathController.markAllDeathsRead);
+router.put("/:id", authMiddleware.verifyToken, authMiddleware.isAdmin, deathController.updateDeath);
+router.delete("/:id", authMiddleware.verifyToken, deathController.deleteDeath);
 
 module.exports = router;

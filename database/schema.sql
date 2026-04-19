@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS hospital_locations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS deaths (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100),
@@ -19,5 +25,17 @@ CREATE TABLE IF NOT EXISTS deaths (
   cause_of_death VARCHAR(255),
   location VARCHAR(100),
   date_of_death DATE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  user_id INT,
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Insert default hospital locations
+INSERT INTO hospital_locations (name) VALUES 
+  ('Central Hospital'),
+  ('North District Clinic'),
+  ('Southside Medical Center'),
+  ('East Valley Hospital'),
+  ('Westwood Care Home')
+ON DUPLICATE KEY UPDATE id=id;
