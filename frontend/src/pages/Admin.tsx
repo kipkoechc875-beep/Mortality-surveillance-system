@@ -28,6 +28,8 @@ export default function Admin() {
   const [error, setError] = useState<string | null>(null);
   const [newLocationName, setNewLocationName] = useState("");
   const [addingLocation, setAddingLocation] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -53,6 +55,15 @@ export default function Admin() {
 
         const usersData = await usersResponse.json();
         setUsers(usersData);
+
+        // fetch current user details (including email)
+        const meResp = await fetch("/api/auth/me", {
+          headers: { Authorization: token!, "Content-Type": "application/json" },
+        });
+        if (meResp.ok) {
+          const me = await meResp.json();
+          setAdminEmail(me.email || "");
+        }
 
         // Fetch locations
         const locationsResponse = await fetch("/api/locations", {
@@ -143,6 +154,27 @@ export default function Admin() {
     }
   };
 
+  const saveAdminEmail = async () => {
+    if (!token) return;
+    setSavingEmail(true);
+    try {
+      const resp = await fetch(`/api/users/me`, {
+        method: "PATCH",
+        headers: { Authorization: token!, "Content-Type": "application/json" },
+        body: JSON.stringify({ email: adminEmail }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${resp.status}`);
+      }
+      toast({ title: "Success", description: "Notification email saved" });
+    } catch (err) {
+      toast({ title: "Error", description: (err as Error).message || "Failed to save email", variant: "destructive" });
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
   const deleteLocation = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this hospital location?")) {
       return;
@@ -228,6 +260,16 @@ export default function Admin() {
               <p className="mt-2 text-sm text-muted-foreground">
                 Add, view, and manage hospital locations for death records.
               </p>
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-3xl border border-border bg-background p-6">
+              <h2 className="text-xl font-semibold">Notification Email</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Set the email address that receives notifications when users submit new records.</p>
+              <div className="mt-4 flex gap-2">
+                <Input value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="admin@example.com" />
+                <Button onClick={saveAdminEmail} disabled={savingEmail}>{savingEmail ? 'Saving...' : 'Save'}</Button>
+              </div>
             </div>
           </div>
         </CardContent>

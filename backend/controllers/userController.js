@@ -29,3 +29,16 @@ exports.deleteUser = (req, res) => {
     res.json({ message: "User deleted" });
   });
 };
+
+exports.updateMe = (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Not authenticated' });
+
+  const { email } = req.body;
+  if (typeof email !== 'string') return res.status(400).json({ message: 'Invalid email' });
+
+  userModel.updateUserEmailById(userId, email, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: 'Email updated' });
+  });
+};

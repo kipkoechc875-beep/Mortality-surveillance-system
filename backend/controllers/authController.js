@@ -51,3 +51,15 @@ exports.login = (req, res) => {
     res.json({ token, role: user.role, id: user.id });
   });
 };
+
+exports.me = (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Not authenticated' });
+  const userModel = require('../models/userModel');
+  userModel.getUserById(userId, (err, results) => {
+    if (err) return res.status(500).json(err);
+    if (!results || results.length === 0) return res.status(404).json({ message: 'User not found' });
+    const u = results[0];
+    res.json({ id: u.id, username: u.username, role: u.role, email: u.email, is_active: u.is_active });
+  });
+};

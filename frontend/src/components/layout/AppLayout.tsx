@@ -105,6 +105,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <header className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 sticky top-0 z-10">
             <SidebarTrigger />
             <img src="/logo.png" alt="Mortality Surveillance System" className="h-8 w-auto object-contain" />
+            <nav className="ml-4 flex items-center gap-4">
+              <Link href="/dashboard" className={location === "/dashboard" ? "text-foreground text-sm font-medium flex items-center gap-2" : "text-muted-foreground hover:text-foreground text-sm font-medium flex items-center gap-2"}>
+                <LayoutDashboard />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+              <Link href="/" className={location === "/" ? "text-foreground text-sm font-medium" : "text-muted-foreground hover:text-foreground text-sm font-medium"}>
+                Home
+              </Link>
+              <Link href="/about" className={location === "/about" ? "text-foreground text-sm font-medium" : "text-muted-foreground hover:text-foreground text-sm font-medium"}>
+                About
+              </Link>
+              <Link href="/contact" className={location === "/contact" ? "text-foreground text-sm font-medium" : "text-muted-foreground hover:text-foreground text-sm font-medium"}>
+                Contact
+              </Link>
+            </nav>
+            <div className="ml-auto flex items-center gap-3">
+              <div className="hidden sm:block text-sm text-muted-foreground">Signed in as <span className="font-medium text-foreground">{user?.username}</span></div>
+              <Button variant="ghost" onClick={() => { logout(); setLocation("/login"); }}>
+                Logout
+              </Button>
+            </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
             <div className="max-w-6xl mx-auto">

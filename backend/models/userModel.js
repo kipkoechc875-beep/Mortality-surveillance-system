@@ -9,7 +9,7 @@ exports.createUser = (user, callback) => {
 };
 
 exports.getAllUsers = (callback) => {
-  db.query("SELECT id, username, role, IFNULL(is_active, 1) AS is_active FROM users", callback);
+  db.query("SELECT id, username, role, IFNULL(is_active, 1) AS is_active, email FROM users", callback);
 };
 
 exports.updateUserStatusById = (id, isActive, callback) => {
@@ -18,4 +18,12 @@ exports.updateUserStatusById = (id, isActive, callback) => {
 
 exports.deleteUserById = (id, callback) => {
   db.query("DELETE FROM users WHERE id = ?", [id], callback);
+};
+
+exports.getUserById = (id, callback) => {
+  db.query("SELECT id, username, role, email, is_active FROM users WHERE id = ?", [id], callback);
+};
+
+exports.updateUserEmailById = (id, email, callback) => {
+  db.query("UPDATE users SET email = ? WHERE id = ?", [email, id], callback);
 };

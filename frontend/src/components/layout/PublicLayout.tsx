@@ -1,14 +1,23 @@
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { LayoutDashboard } from "lucide-react";
 
 interface PublicLayoutProps {
   children: React.ReactNode;
 }
 
 export function PublicLayout({ children }: PublicLayoutProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { isAuthenticated, logout } = useAuth();
 
   const navLinkClass = (path: string) =>
     `text-sm font-medium transition-colors ${location === path ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`;
+
+  const handleLogout = () => {
+    logout();
+    setLocation("/");
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -29,12 +38,25 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <Link href="/contact" className={navLinkClass("/contact")}>
               Contact
             </Link>
-            <Link href="/login" className={navLinkClass("/login")}>
-              Login
-            </Link>
-            <Link href="/register" className={navLinkClass("/register")}>
-              Register
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link href="/login" className={navLinkClass("/login")}>
+                  Login
+                </Link>
+                <Link href="/register" className={navLinkClass("/register")}>
+                  Register
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/dashboard" className="text-muted-foreground hover:text-foreground p-1 rounded">
+                  <LayoutDashboard className="h-5 w-5" />
+                </Link>
+                <Button variant="ghost" onClick={handleLogout} className="text-sm">
+                  Logout
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </header>

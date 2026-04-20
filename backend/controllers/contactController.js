@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+const mailer = require("../services/mailer");
 
 exports.sendContact = async (req, res) => {
   const { name, email, message } = req.body || {};
@@ -8,22 +8,12 @@ exports.sendContact = async (req, res) => {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
+    await mailer.sendMail({
       from: `${name} <${email}>`,
       to: process.env.GMAIL_USER,
       subject: `Contact form message from ${name}`,
       text: `From: ${name} <${email}>\n\n${message}`,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
     return res.json({ message: "Email sent" });
   } catch (err) {
     console.error("Contact email error:", err);

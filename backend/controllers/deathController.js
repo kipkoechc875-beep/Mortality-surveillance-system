@@ -8,9 +8,31 @@ const addDeath = (req, res) => {
     is_read: 0,
   };
 
-  db.query("INSERT INTO deaths SET ?", data, (err, result) => {
+  db.query("INSERT INTO deaths SET ?", data, async (err, result) => {
     if (err) return res.status(500).json(err);
-    res.json({ message: "Death recorded", id: result.insertId });
+    const insertId = result.insertId;
+
+    // After inserting, notify admin(s) by email if admin email(s) set
+    try {
+      const mailer = require("../services/mailer");
+      db.query("SELECT email FROM users WHERE role = 'admin' AND email IS NOT NULL AND email <> ''", (err2, admins) => {
+        if (err2) return console.warn('Failed to query admin emails:', err2);
+        const emails = admins.map((a) => a.email).filter(Boolean);
+        if (emails.length === 0) return;
+
+        const text = `A new death record has been submitted.\n\nRecord ID: ${insertId}\nSubmitted by user_id: ${data.user_id}\nName: ${data.name || 'N/A'}\nAge: ${data.age || 'N/A'}\nLocation: ${data.location || 'N/A'}\nDate: ${data.date_of_death || 'N/A'}\n\nPlease review the admin dashboard.`;
+
+        mailer.sendMail({
+          to: emails.join(","),
+          subject: `New death record submitted (#${insertId})`,
+          text,
+        }).catch((e) => console.warn('Failed to send admin notification email:', e));
+      });
+    } catch (e) {
+      console.warn('Mailer load/send error:', e);
+    }
+
+    res.json({ message: "Death recorded", id: insertId });
   });
 };
 
