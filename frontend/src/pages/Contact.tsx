@@ -13,10 +13,24 @@ export default function Contact() {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    setStatus("Thank you! Your message has been received.");
-    setName("");
-    setEmail("");
-    setMessage("");
+    setStatus("Sending...");
+
+    fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, message }),
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error((await res.json()).error || "Send failed");
+        setStatus("Thank you! Your message has been received.");
+        setName("");
+        setEmail("");
+        setMessage("");
+      })
+      .catch((err) => {
+        console.error(err);
+        setStatus("Failed to send message. Try again later.");
+      });
   };
 
   return (
