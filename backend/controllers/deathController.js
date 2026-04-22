@@ -114,6 +114,22 @@ const deleteDeath = (req, res) => {
   }
 };
 
+// GET gender stats (Admin only)
+const getGenderStats = (req, res) => {
+  db.query("SELECT sex, COUNT(*) AS count FROM deaths GROUP BY sex", (err, results) => {
+    if (err) return res.status(500).json(err);
+    // Normalize results to include male/female keys
+    const stats = { male: 0, female: 0, other: 0 };
+    results.forEach((row) => {
+      const s = (row.sex || '').toLowerCase();
+      if (s.startsWith('m')) stats.male += row.count;
+      else if (s.startsWith('f')) stats.female += row.count;
+      else stats.other += row.count;
+    });
+    res.json(stats);
+  });
+};
+
 // ✅ VERY IMPORTANT EXPORT
 module.exports = {
   addDeath,
@@ -122,4 +138,5 @@ module.exports = {
   markAllDeathsRead,
   updateDeath,
   deleteDeath,
+  getGenderStats,
 };

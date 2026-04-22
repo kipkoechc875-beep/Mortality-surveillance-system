@@ -23,6 +23,18 @@ export default function Register() {
       return;
     }
 
+    // Client-side validation: username must include letters and numbers, password min 6 with letters and numbers
+    const usernameRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+    if (!usernameRegex.test(username)) {
+      setError("Username must contain letters and numbers (at least one of each)");
+      return;
+    }
+    if (!passwordRegex.test(password)) {
+      setError("Password must be at least 6 characters and include letters and numbers");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;

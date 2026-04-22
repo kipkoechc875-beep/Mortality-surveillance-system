@@ -22,13 +22,28 @@ export default function Login() {
       return;
     }
 
+    // Client-side validate format as well
+    const usernameRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+    if (!usernameRegex.test(username) || !passwordRegex.test(password)) {
+      setError("Invalid username or password format");
+      return;
+    }
+
     const result = await login(username, password);
     if (!result.success) {
       setError(result.message ?? "Invalid credentials.");
       return;
     }
 
+    // Ensure navigation happens reliably in dev/HMR environments
     setLocation("/dashboard");
+    // fallback: try forcing a hard redirect if SPA navigation doesn't work
+    setTimeout(() => {
+      if (window.location.pathname !== "/dashboard") {
+        window.location.href = "/dashboard";
+      }
+    }, 100);
   };
 
   return (

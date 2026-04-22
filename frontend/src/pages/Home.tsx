@@ -5,13 +5,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f4f4f4" }}>
       <section className="flex flex-col items-center justify-center px-6 pb-16 pt-20 text-center">
-        <div
-          className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "#e41e10", backgroundColor: "#fde8e7", borderColor: "#f5b8b5" }}
-        >
-          <ShieldCheck className="h-3.5 w-3.5" />
-          National Health Records Platform
-        </div>
+        {/* Badge removed as requested */}
 
         <h1 className="mb-5 max-w-3xl text-4xl font-bold leading-tight md:text-5xl" style={{ color: "#111111" }}>
           Mortality Surveillance

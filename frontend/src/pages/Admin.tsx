@@ -24,6 +24,9 @@ export default function Admin() {
   const { toast } = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [locations, setLocations] = useState<HospitalLocation[]>([]);
+  const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
+  const [editingLocationName, setEditingLocationName] = useState("");
+  const [genderStats, setGenderStats] = useState<{ male: number; female: number; other: number }>({ male: 0, female: 0, other: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newLocationName, setNewLocationName] = useState("");
@@ -75,6 +78,14 @@ export default function Admin() {
         if (locationsResponse.ok) {
           const locationsData = await locationsResponse.json();
           setLocations(locationsData);
+        }
+
+        // fetch gender stats for admin dashboard
+        const statsResp = await fetch("/api/deaths/stats/gender", {
+          headers: { Authorization: token!, "Content-Type": "application/json" },
+        });
+        if (statsResp.ok) {
+          setGenderStats(await statsResp.json());
         }
       } catch (err) {
         console.error("Failed to load data:", err);
@@ -209,6 +220,39 @@ export default function Admin() {
     }
   };
 
+  const startEditLocation = (id: number, name: string) => {
+    setEditingLocationId(id);
+    setEditingLocationName(name);
+  };
+
+  const cancelEditLocation = () => {
+    setEditingLocationId(null);
+    setEditingLocationName("");
+  };
+
+  const saveEditLocation = async (id: number) => {
+    if (!editingLocationName.trim()) {
+      toast({ title: 'Error', description: 'Location name is required', variant: 'destructive' });
+      return;
+    }
+    try {
+      const resp = await fetch(`/api/locations/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: token!, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editingLocationName.trim() }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${resp.status}`);
+      }
+      toast({ title: 'Success', description: 'Location updated' });
+      cancelEditLocation();
+      await refreshData();
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message || 'Failed to update location', variant: 'destructive' });
+    }
+  };
+
   const toggleUserActive = async (id: number, isActive: number) => {
     await fetch(`/api/users/${id}/status`, {
       method: "PATCH",
@@ -238,6 +282,9 @@ export default function Admin() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Mortality Surveillance</h1>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Admin Management Panel</CardTitle>
@@ -277,6 +324,31 @@ export default function Admin() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Mortality Surveillance — Gender Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex items-center gap-6">
+            <div>
+              <div className="text-xs text-muted-foreground">Male</div>
+              <div className="text-2xl font-bold">{genderStats.male}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Female</div>
+              <div className="text-2xl font-bold">{genderStats.female}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Other</div>
+              <div className="text-2xl font-bold">{genderStats.other}</div>
+            </div>
+            <div className="ml-auto text-sm">
+              Most affected: <span className="font-semibold">{genderStats.male > genderStats.female ? 'Male' : genderStats.female > genderStats.male ? 'Female' : 'Equal'}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Hospital Locations</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -307,15 +379,29 @@ export default function Admin() {
                 <TableBody>
                   {locations.map((location) => (
                     <TableRow key={location.id}>
-                      <TableCell>{location.name}</TableCell>
+                      <TableCell>
+                        {editingLocationId === location.id ? (
+                          <Input value={editingLocationName} onChange={(e) => setEditingLocationName(e.target.value)} />
+                        ) : (
+                          location.name
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteLocation(location.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          {editingLocationId === location.id ? (
+                            <>
+                              <Button size="sm" onClick={() => saveEditLocation(location.id)}>Save</Button>
+                              <Button size="sm" variant="outline" onClick={cancelEditLocation}>Cancel</Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => startEditLocation(location.id, location.name)}>Edit</Button>
+                              <Button size="sm" variant="destructive" onClick={() => deleteLocation(location.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

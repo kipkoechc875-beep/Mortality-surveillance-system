@@ -73,3 +73,25 @@ module.exports = {
   addLocation,
   deleteLocation,
 };
+
+// UPDATE LOCATION (Admin only)
+const updateLocation = (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  if (!id) return res.status(400).json({ message: 'Location ID is required' });
+  if (!name || !name.trim()) return res.status(400).json({ message: 'Location name is required' });
+
+  const trimmed = name.trim();
+  db.query('UPDATE hospital_locations SET name = ? WHERE id = ?', [trimmed, id], (err, result) => {
+    if (err) {
+      if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'This hospital location already exists' });
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Error updating location', error: err.message });
+    }
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Hospital location not found' });
+    res.json({ message: 'Hospital location updated', id, name: trimmed });
+  });
+};
+
+module.exports.updateLocation = updateLocation;

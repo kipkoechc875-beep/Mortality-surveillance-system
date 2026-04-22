@@ -7,5 +7,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 router.get("/", locationController.getLocations); // Public - can be accessed by anyone
 router.post("/", authMiddleware.verifyToken, authMiddleware.isAdmin, locationController.addLocation); // Admin only
 router.delete("/:id", authMiddleware.verifyToken, authMiddleware.isAdmin, locationController.deleteLocation); // Admin only
+router.patch("/:id", authMiddleware.verifyToken, authMiddleware.isAdmin, locationController.updateLocation); // Admin only
 
 module.exports = router;

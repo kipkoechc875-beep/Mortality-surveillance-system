@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 
 interface User {
   id: number;
@@ -34,6 +34,55 @@ function loadStoredUser(): User | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => loadStoredUser());
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+  const logoutTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    // If token exists, validate with server and schedule auto-logout based on token exp
+    const init = async () => {
+      const t = localStorage.getItem("token");
+      if (!t) return;
+
+      try {
+        const resp = await fetch("/api/auth/me", { headers: { Authorization: t, "Content-Type": "application/json" } });
+        if (!resp.ok) {
+          logout();
+          return;
+        }
+        const me = await resp.json();
+        setUser({ id: me.id, username: me.username, role: me.role });
+        setToken(t);
+
+        // schedule auto logout using exp from token
+        const parts = t.split('.');
+        if (parts.length === 3) {
+          try {
+            const payload = JSON.parse(atob(parts[1]));
+            if (payload && payload.exp) {
+              const expiresAt = payload.exp * 1000;
+              const now = Date.now();
+              const ms = expiresAt - now;
+              if (ms <= 0) {
+                logout();
+              } else {
+                if (logoutTimer.current) window.clearTimeout(logoutTimer.current);
+                logoutTimer.current = window.setTimeout(() => logout(), ms) as unknown as number;
+              }
+            }
+          } catch (e) {
+            // ignore decode errors
+          }
+        }
+      } catch (e) {
+        logout();
+      }
+    };
+
+    init();
+
+    return () => {
+      if (logoutTimer.current) window.clearTimeout(logoutTimer.current);
+    };
+  }, []);
 
   const login = async (username: string, password: string) => {
     try {
@@ -58,6 +107,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(loggedUser));
 
+      // schedule auto-logout based on token exp
+      try {
+        const parts = data.token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload && payload.exp) {
+            const expiresAt = payload.exp * 1000;
+            const ms = expiresAt - Date.now();
+            if (logoutTimer.current) window.clearTimeout(logoutTimer.current);
+            logoutTimer.current = window.setTimeout(() => logout(), ms) as unknown as number;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
       return { success: true };
     } catch (error) {
       return { success: false, message: "Unable to reach the authentication server." };
@@ -77,7 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, message: data.message || "Registration failed" };
       }
 
-      return login(username, password);
+      // New registrations require admin verification. Do not auto-login.
+      return { success: true, message: data.message || "Registered. Awaiting admin verification." };
     } catch (error) {
       return { success: false, message: "Unable to reach the authentication server." };
     }
