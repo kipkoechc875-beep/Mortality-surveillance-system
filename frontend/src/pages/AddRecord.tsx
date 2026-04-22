@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRecords } from "@/context/RecordsContext";
-import { CAUSES } from "@/lib/mock-data";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -181,18 +180,13 @@ export default function AddRecord() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Cause of Death</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-cause">
-                            <SelectValue placeholder="Select cause" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {CAUSES.map((cause) => (
-                            <SelectItem key={cause} value={cause}>{cause}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter cause of death"
+                          {...field}
+                          data-testid="input-cause"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

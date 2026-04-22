@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useRecords } from "@/context/RecordsContext";
-import { CAUSES } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -216,18 +215,13 @@ export default function EditRecord() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Cause of Death</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-cause">
-                            <SelectValue placeholder="Select cause" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {CAUSES.map((cause) => (
-                            <SelectItem key={cause} value={cause}>{cause}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter cause of death"
+                          {...field}
+                          data-testid="input-cause"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
