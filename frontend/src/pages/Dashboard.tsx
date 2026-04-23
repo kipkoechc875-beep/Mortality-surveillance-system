@@ -1,7 +1,7 @@
 import { useRecords } from "@/context/RecordsContext";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "wouter";
-import { format, isToday } from "date-fns";
+import { format, isToday, startOfWeek } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
@@ -131,15 +131,19 @@ export default function Dashboard() {
   }, {} as Record<string, number>);
   const locationsData = Object.entries(locationCounts).map(([name, value]) => ({ name, value }));
 
-  // Chart data: Monthly trend
-  const monthlyCounts = records.reduce((acc, curr) => {
-    const month = format(new Date(curr.date_of_death), 'MMM yyyy');
-    acc[month] = (acc[month] || 0) + 1;
+  // Chart data: Weekly trend
+  const weeklyCounts = records.reduce((acc, curr) => {
+    const weekStart = startOfWeek(new Date(curr.date_of_death), { weekStartsOn: 1 });
+    const weekKey = format(weekStart, "yyyy-MM-dd");
+    acc[weekKey] = (acc[weekKey] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  const monthlyData = Object.entries(monthlyCounts)
-    .map(([month, count]) => ({ month, count }))
-    .reverse(); // simple reverse for chronological order
+  const weeklyData = Object.entries(weeklyCounts)
+    .sort(([weekA], [weekB]) => new Date(weekA).getTime() - new Date(weekB).getTime())
+    .map(([weekStart, count]) => ({
+      week: format(new Date(weekStart), "dd MMM"),
+      count,
+    }));
 
   // Color palette for causes of death - distinct and accessible colors
   const CAUSE_COLORS = {
@@ -355,13 +359,13 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="col-span-1 lg:col-span-2">
           <CardHeader>
-            <CardTitle>Monthly Trend (Past Year)</CardTitle>
+            <CardTitle>Weekly Trend (Past Year)</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={weeklyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <XAxis dataKey="week" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <RechartsTooltip />
                 <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
