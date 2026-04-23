@@ -7,7 +7,7 @@ export default function About() {
       <div className="mx-auto max-w-3xl space-y-8">
         <section className="rounded-3xl border border-border bg-card p-8 shadow-sm">
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold">About Mortality Surveillance System</h1>
+            <h1 className="text-3xl font-bold">About Web-Based Mortality Surveillance System</h1>
             <p className="text-muted-foreground leading-relaxed">
               This platform helps health authorities securely record and analyse mortality data.
               It is designed to support structured death record entry, trend reporting, and case review for

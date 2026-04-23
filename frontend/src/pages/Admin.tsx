@@ -283,7 +283,7 @@ export default function Admin() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mortality Surveillance</h1>
+        <h1 className="text-2xl font-bold">Web-Based Mortality Surveillance System</h1>
       </div>
       <Card>
         <CardHeader>
@@ -324,7 +324,7 @@ export default function Admin() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Mortality Surveillance — Gender Summary</CardTitle>
+          <CardTitle>Web-Based Mortality Surveillance System - Gender Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex items-center gap-6">

@@ -52,10 +52,10 @@ export default function Login() {
         <CardHeader className="space-y-1 items-center text-center">
           <img
             src="/logo.png"
-            alt="Mortality Surveillance System"
+            alt="Web-Based Mortality Surveillance System"
             className="mb-4 h-16 w-auto object-contain"
           />
-          <CardTitle className="text-2xl font-bold tracking-tight">Mortality Surveillance System</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">Web-Based Mortality Surveillance System</CardTitle>
           <CardDescription className="text-muted-foreground">
             Enter your credentials to access the system
           </CardDescription>

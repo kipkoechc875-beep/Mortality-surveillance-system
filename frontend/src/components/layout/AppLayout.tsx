@@ -33,7 +33,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar className="border-r border-border">
           <SidebarContent>
             <div className="p-4 flex items-center border-b border-border">
-              <img src="/logo.png" alt="Mortality Surveillance System" className="h-12 w-auto object-contain" />
+              <img src="/logo.png" alt="Web-Based Mortality Surveillance System" className="h-12 w-auto object-contain" />
             </div>
             <SidebarGroup>
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -104,7 +104,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 sticky top-0 z-10">
             <SidebarTrigger />
-            <img src="/logo.png" alt="Mortality Surveillance System" className="h-8 w-auto object-contain" />
+            <img src="/logo.png" alt="Web-Based Mortality Surveillance System" className="h-8 w-auto object-contain" />
             <nav className="ml-4 flex items-center gap-4">
               <Link href="/dashboard" className={location === "/dashboard" ? "text-foreground text-sm font-medium flex items-center gap-2" : "text-muted-foreground hover:text-foreground text-sm font-medium flex items-center gap-2"}>
                 <LayoutDashboard />

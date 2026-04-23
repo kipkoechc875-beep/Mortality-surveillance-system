@@ -24,8 +24,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Mortality Surveillance System" className="h-10 w-auto object-contain" />
-            <span className="text-lg font-semibold">Mortality Surveillance</span>
+            <img src="/logo.png" alt="Web-Based Mortality Surveillance System" className="h-10 w-auto object-contain" />
+            <span className="text-lg font-semibold">Web-Based Mortality Surveillance System</span>
           </Link>
 
           <nav className="flex items-center gap-4">

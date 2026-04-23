@@ -8,7 +8,7 @@ export default function Home() {
         {/* Badge removed as requested */}
 
         <h1 className="mb-5 max-w-3xl text-4xl font-bold leading-tight md:text-5xl" style={{ color: "#111111" }}>
-          Mortality Surveillance
+          Web-Based Mortality Surveillance
           <br />
           <span style={{ color: "#e41e10" }}>& Reporting System</span>
         </h1>
@@ -135,7 +135,7 @@ export default function Home() {
         className="border-t px-8 py-5 text-center text-xs"
         style={{ borderColor: "#dddddd", color: "#999999", backgroundColor: "#ffffff" }}
       >
-        Mortality Surveillance System - Health Records Platform (c) {new Date().getFullYear()}
+        Web-Based Mortality Surveillance System - Health Records Platform (c) {new Date().getFullYear()}
       </footer>
     </div>
   );
