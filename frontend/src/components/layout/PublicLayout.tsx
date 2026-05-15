@@ -38,6 +38,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <Link href="/contact" className={navLinkClass("/contact")}>
               Contact
             </Link>
+            <Link href="/mitigation" className={navLinkClass("/mitigation")}>
+              Mitigation
+            </Link>
             {!isAuthenticated ? (
               <>
                 <Link href="/login" className={navLinkClass("/login")}>

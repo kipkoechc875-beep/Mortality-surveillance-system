@@ -5,6 +5,7 @@ const deathController = require("../controllers/deathController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 // Routes
+router.get("/public/mitigation", deathController.getPublicMitigationSummary);
 router.post("/", authMiddleware.verifyToken, deathController.addDeath);
 router.get("/", authMiddleware.verifyToken, deathController.getDeaths);
 router.get("/unread-count", authMiddleware.verifyToken, authMiddleware.isAdmin, deathController.getUnreadCount);

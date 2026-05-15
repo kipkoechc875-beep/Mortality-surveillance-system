@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { getMitigationSteps } = require("../services/mitigationGuide");
 
 // ADD RECORD
 const addDeath = (req, res) => {
@@ -130,6 +131,37 @@ const getGenderStats = (req, res) => {
   });
 };
 
+const getPublicMitigationSummary = (req, res) => {
+  const query = `
+    SELECT cause_of_death, COUNT(*) AS count
+    FROM deaths
+    WHERE cause_of_death IS NOT NULL AND cause_of_death <> ''
+    GROUP BY cause_of_death
+    ORDER BY count DESC, cause_of_death ASC
+    LIMIT 1
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json(err);
+
+    if (!results.length) {
+      return res.json({
+        mostCommonCause: null,
+        count: 0,
+        mitigationSteps: [],
+      });
+    }
+
+    const mostCommonCause = results[0].cause_of_death;
+
+    res.json({
+      mostCommonCause,
+      count: results[0].count,
+      mitigationSteps: getMitigationSteps(mostCommonCause),
+    });
+  });
+};
+
 // ✅ VERY IMPORTANT EXPORT
 module.exports = {
   addDeath,
@@ -139,4 +171,5 @@ module.exports = {
   updateDeath,
   deleteDeath,
   getGenderStats,
+  getPublicMitigationSummary,
 };

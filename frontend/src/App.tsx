@@ -10,6 +10,7 @@ import Login from "@/pages/Login";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Register from "@/pages/Register";
+import Mitigation from "@/pages/Mitigation";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
 import AddRecord from "@/pages/AddRecord";
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/">{() => <PublicLayout><Home /></PublicLayout>}</Route>
       <Route path="/about">{() => <PublicLayout><About /></PublicLayout>}</Route>
       <Route path="/contact">{() => <PublicLayout><Contact /></PublicLayout>}</Route>
+      <Route path="/mitigation">{() => <PublicLayout><Mitigation /></PublicLayout>}</Route>
       <Route path="/register">{() => <PublicLayout><Register /></PublicLayout>}</Route>
       <Route path="/login">{() => <PublicLayout><Login /></PublicLayout>}</Route>
       <Route path="/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>

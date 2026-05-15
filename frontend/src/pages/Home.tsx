@@ -28,14 +28,14 @@ export default function Home() {
             Access the System
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <a
-            href="#features"
+          <Link
+            href="/mitigation"
             className="inline-flex items-center gap-2 rounded border px-7 py-3 text-sm font-medium transition-colors"
             style={{ color: "#333333", borderColor: "#cccccc", backgroundColor: "#ffffff" }}
             data-testid="link-learn-more"
           >
-            Learn More
-          </a>
+            View Mitigation
+          </Link>
         </div>
       </section>
 
